@@ -2,6 +2,7 @@ import os
 from dataclasses import dataclass
 from typing import Any, Optional, Callable
 from docker import DockerClient
+import time
 
 
 from casperlabs_local_net.casperlabs_accounts import Account
@@ -9,7 +10,7 @@ from casperlabs_local_net.common import random_string, BOOTSTRAP_PATH, testing_r
 from casperlabs_local_net.cli import CLI
 
 
-DEFAULT_NODE_ENV = {
+NCB_NODE_ENV = {
     "RUST_BACKTRACE": "full",
     "CL_LOG_LEVEL": os.environ.get("CL_LOG_LEVEL", "INFO"),
     "CL_SERVER_NO_UPNP": "true",
@@ -17,6 +18,32 @@ DEFAULT_NODE_ENV = {
     # Disable highway while most of the tests assume NCB mode.
     "CL_HIGHWAY_ENABLED": "false",
 }
+
+
+def timestamp():
+    return int(round(time.time() * 1000))
+
+
+HIGHWAY_NODE_ENV = dict(
+    # Old defaults
+    RUST_BACKTRACE="full",
+    CL_LOG_LEVEL=os.environ.get("CL_LOG_LEVEL", "INFO"),
+    CL_SERVER_NO_UPNP="true",
+    CL_VERSION="test",
+    # Highway
+    CL_HIGHWAY_ENABLED="true",
+    CL_HIGHWAY_INIT_ROUND_EXPONENT=14,
+    CL_CHAINSPEC_HIGHWAY_GENESIS_ERA_START=str(timestamp()),
+    CL_CHAINSPEC_HIGHWAY_ERA_DURATION="4minutes",
+    CL_CHAINSPEC_HIGHWAY_BOOKING_DURATION="90seconds",
+    CL_CHAINSPEC_HIGHWAY_ENTROPY_DURATION="30seconds",
+    CL_CHAINSPEC_HIGHWAY_VOTING_PERIOD_DURATION="2minutes",
+    # Other node settings
+    CL_SERVER_RELAY_FACTOR=2,
+)
+
+
+DEFAULT_NODE_ENV = HIGHWAY_NODE_ENV 
 
 
 def default_bond_amount(i, n):
